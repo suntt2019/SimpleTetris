@@ -17,7 +17,9 @@ interface blockInfo{
 }
 
 class Tetris{
+	static int cubeS=0;
 	int score=-1;
+	int cubeSize=40;
 	JFrame jfrm;
 	JPanel headPanel,mainPanel,gamePanel,statusPanel,textPanel;
 	JButton cubes[],nextCubes[];
@@ -26,12 +28,15 @@ class Tetris{
 	final static Color COLORS[]={new Color(255,255,255),new Color(250,80,80),new Color(80,250,80),new Color(80,80,250),new Color(230,230,30),new Color(210,30,210),new Color(30,210,210)};
 	static final int EMPTY=0;
 
-	Tetris(){
+	Tetris(int cs){
+		if(cs>0)
+			cubeSize=cs;
+		System.out.println(cubeSize);
 
 
 		jfrm = new JFrame("Tetris demo");
 		jfrm.setLayout(new BorderLayout());
-		jfrm.setSize(640,880);
+		jfrm.setSize(16*cubeSize,20*cubeSize+80);
 		jfrm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jfrm.setLayout(new BorderLayout());
 
@@ -50,7 +55,7 @@ class Tetris{
 		gamePanel = new JPanel();
 		gamePanel.setLayout(new GridLayout(20,9));
 		mainPanel.add(gamePanel);
-		gamePanel.setPreferredSize(new Dimension(360,800));
+		gamePanel.setPreferredSize(new Dimension(9*cubeSize,20*cubeSize));
 
 		cubes = new JButton[180];
 		for(int i=0;i<180;i++){
@@ -64,7 +69,7 @@ class Tetris{
 		statusPanel = new JPanel();
 		statusPanel.setLayout(new FlowLayout());
 		mainPanel.add(statusPanel);
-		statusPanel.setPreferredSize(new Dimension(230,400));
+		statusPanel.setPreferredSize(new Dimension((int)(5.1*cubeSize),20*cubeSize));
 
 		textPanel = new JPanel();
 		textPanel.setLayout(new GridLayout(4,1));
@@ -80,7 +85,7 @@ class Tetris{
 		JPanel nextPanel = new JPanel();
 		nextPanel.setLayout(new GridLayout(5,5));
 		statusPanel.add(nextPanel);
-		nextPanel.setPreferredSize(new Dimension(200,200));
+		nextPanel.setPreferredSize(new Dimension(5*cubeSize,5*cubeSize));
 
 		nextCubes = new JButton[25];
 		for(int i=0;i<25;i++){
@@ -157,9 +162,12 @@ class Tetris{
 
 
 	public static void main(String args[]){
+		cubeS=0;
+		if(args.length!=0)
+			cubeS=Integer.parseInt(args[0]);
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
-				Tetris t = new Tetris();
+				Tetris t = new Tetris(cubeS);
 				t.init();
 			}
 		});
