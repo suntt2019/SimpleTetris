@@ -105,21 +105,36 @@ class Tetris{
 			public void keyTyped(KeyEvent e){
 				if(!go.gameEnded){
 					switch(e.getKeyChar()){
-						case 'a': case 'A':
+						case 'a': case 'A': case '4':
 							go.goingLeft();
 							break;
-						case 'd': case 'D':
+						case 'd': case 'D': case '6':
 							go.goingRight();
 							break;
-						case 's': case 'S':
-							go.goingDown();
+						case 's': case 'S':case '2':
+							go.goingDown(); 
 							break;
-						case 'w': case 'W':
+						case 'w': case 'W': case '8':
 							go.changingPosture();
 							break;
 						default:
-							System.out.println(e.getKeyChar());
+							//System.out.println(e.getKeyChar());
 					}
+					// System.out.println(e);
+					// switch(e.getKeyCode()){
+					// 	case KeyEvent.VK_LEFT:
+					// 		go.goingLeft();
+					// 		break;
+					// 	case KeyEvent.VK_RIGHT:
+					// 		go.goingRight();
+					// 		break;
+					// 	case KeyEvent.VK_DOWN:
+					// 		go.goingDown(); 
+					// 		break;
+					// 	case KeyEvent.VK_UP:
+					// 		go.changingPosture();
+					// 		break;
+					// }
 				}
 			}
 			public void keyPressed(KeyEvent e){
