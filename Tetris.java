@@ -7,41 +7,47 @@ import java.awt.event.*;
 interface blockInfo{
 	public final int[][][][] blockShape={
 		{ {{0,0},{1,0},{0,1},{1,1}},{{0,0},{1,0},{0,1},{1,1}},{{0,0},{1,0},{0,1},{1,1}},{{0,0},{1,0},{0,1},{1,1}} },
-		{ {{0,0},{0,1},{0,2},{0,3}},{{-1,1},{0,1},{1,1},{2,1}},{{0,0},{0,1},{0,2},{0,3}},{{-2,1},{-1,1},{0,1},{1,1}} },
+		{ {{0,0},{0,1},{0,2},{0,3}},{{-1,1},{0,1},{1,1},{-2,1}},{{0,0},{0,1},{0,2},{0,3}},{{2,1},{-1,1},{0,1},{1,1}} },
 		{ {{0,0},{0,1},{1,1},{1,2}},{{0,1},{0,2},{-1,2},{1,1}},{{0,0},{0,1},{1,1},{1,2}},{{0,1},{0,2},{-1,2},{1,1}} },
 		{ {{-1,1},{0,1},{0,2},{1,2}},{{0,0},{0,1},{-1,1},{-1,2}},{{-1,1},{0,1},{0,2},{1,2}},{{0,0},{0,1},{-1,1},{-1,2}} },
-	};//TODO:把不顶头的设置成初始顶头配置（-1）
+		{ {{-1,2},{-1,1},{0,1},{1,1}},{{-1,0},{0,0},{0,1},{0,2}},{{-1,1},{0,1},{1,1},{1,0}},{{0,0},{0,1},{0,2},{1,2}} },
+		{ {{-1,0},{-1,1},{0,1},{1,1}},{{1,0},{0,0},{0,1},{0,2}},{{-1,1},{0,1},{1,1},{1,2}},{{0,0},{0,1},{0,2},{-1,2}} },
+		{ {{0,0},{-1,1},{0,1},{1,1}},{{1,1},{0,0},{0,1},{0,2}},{{-1,1},{0,1},{1,1},{0,2}},{{0,0},{0,1},{0,2},{-1,1}} },
+	};
 }
 
 class Tetris{
-	int score=0;
-	JButton cubes[];
-	JLabel scoreLabel;
+	int score=-1;
+	JFrame jfrm;
+	JPanel headPanel,mainPanel,gamePanel,statusPanel,textPanel;
+	JButton cubes[],nextCubes[];
+	JLabel titleLabel,scoreLabel,gameOverLabel;
 	GameOperator go;
-	final static Color COLORS[]={new Color(255,255,255),new Color(255,100,100),new Color(100,255,100),new Color(100,100,255),new Color(255,255,50),new Color(255,50,255),new Color(50,255,255)};
+	final static Color COLORS[]={new Color(255,255,255),new Color(250,80,80),new Color(80,250,80),new Color(80,80,250),new Color(230,230,30),new Color(210,30,210),new Color(30,210,210)};
+	static final int EMPTY=0;
 
 	Tetris(){
 
 
-		JFrame jfrm = new JFrame("Tetris demo");
+		jfrm = new JFrame("Tetris demo");
 		jfrm.setLayout(new BorderLayout());
-		jfrm.setSize(600,880);
+		jfrm.setSize(640,880);
 		jfrm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jfrm.setLayout(new BorderLayout());
 
-		JPanel headPanel = new JPanel();
+		headPanel = new JPanel();
 		headPanel.setLayout(new FlowLayout());
 		jfrm.add(headPanel,BorderLayout.NORTH);
 
-		JLabel titleLabel = new JLabel("SimpleTetris!");
+		titleLabel = new JLabel("SimpleTetris!  --by suntt2019");
 		headPanel.add(titleLabel);
 
 
-		JPanel mainPanel = new JPanel();
+		mainPanel = new JPanel();
 		mainPanel.setLayout(new FlowLayout());
 		jfrm.add(mainPanel);
 
-		JPanel gamePanel = new JPanel();
+		gamePanel = new JPanel();
 		gamePanel.setLayout(new GridLayout(20,9));
 		mainPanel.add(gamePanel);
 		gamePanel.setPreferredSize(new Dimension(360,800));
@@ -51,21 +57,42 @@ class Tetris{
 			cubes[i] = new JButton();
 			//cubes[i].setPreferredSize(new Dimension(50,50));
 			cubes[i].setEnabled(false);
-			cubes[i].setBackground(new Color(255,255,255));
+			cubes[i].setBackground(COLORS[EMPTY]);
 			gamePanel.add(cubes[i]);
 		}
 
-		JPanel statusPanel = new JPanel();
-		statusPanel.setLayout(new GridLayout(2,1));
+		statusPanel = new JPanel();
+		statusPanel.setLayout(new FlowLayout());
 		mainPanel.add(statusPanel);
-		statusPanel.setPreferredSize(new Dimension(160,400));
+		statusPanel.setPreferredSize(new Dimension(230,400));
 
-		JPanel textPanel = new JPanel();
-		textPanel.setLayout(new FlowLayout());
+		textPanel = new JPanel();
+		textPanel.setLayout(new GridLayout(4,1));
 		statusPanel.add(textPanel);
 
-		scoreLabel = new JLabel("score:"+score);
+		scoreLabel = new JLabel("得分:"+score);
 		textPanel.add(scoreLabel);
+
+		textPanel.add(new JLabel("(放下一个方块+1分，填满一行+20分)"));
+		textPanel.add(new JLabel("--------------------------------------------"));
+		textPanel.add(new JLabel( "                ↓下一个方块↓                 "));
+
+		JPanel nextPanel = new JPanel();
+		nextPanel.setLayout(new GridLayout(5,5));
+		statusPanel.add(nextPanel);
+		nextPanel.setPreferredSize(new Dimension(200,200));
+
+		nextCubes = new JButton[25];
+		for(int i=0;i<25;i++){
+			nextCubes[i] = new JButton();
+			//cubes[i].setPreferredSize(new Dimension(50,50));
+			nextCubes[i].setEnabled(false);
+			nextCubes[i].setBackground(COLORS[EMPTY]);
+			nextPanel.add(nextCubes[i]);
+		}
+
+		gameOverLabel = new JLabel("");
+		statusPanel.add(gameOverLabel);
 
 
 
@@ -94,7 +121,7 @@ class Tetris{
 				// System.out.println(e);
 			}
 			public void keyReleased(KeyEvent e){
-				
+				// System.out.println(e);	
 			}
 		});
 
@@ -121,8 +148,10 @@ class Tetris{
 				
 	}
 
+
 	public void upadteGameData(){
-		scoreLabel.setText("score:"+score);
+		scoreLabel.setText("得分:"+score);
+		if(go.gameEnded)gameOverLabel.setText("游戏结束");
 		return;
 	}
 
@@ -177,7 +206,7 @@ class GameOperator{
 		
 		thisBlockStatus[0]=4;
 		thisBlockStatus[4]=-1;
-		nextBlockStatus[2]=(int)(Math.random()*4);//type-random
+		nextBlockStatus[2]=(int)(Math.random()*7);//type-random
 		nextBlockStatus[3]=(int)(Math.random()*4);//posture-random
 		nextBlockStatus[4]=(int)(Math.random()*6)+1;//color-random
 		generateNewBlock();
@@ -224,6 +253,13 @@ class GameOperator{
 		//TODO:generate random number
 		int colorId=COLOR1;//random
 		int x,y,relativeY;
+
+		for(int i=0;i<4;i++){
+			x=blockInfo.blockShape[nextBlockStatus[2]][nextBlockStatus[3]][i][0]+2;
+			y=blockInfo.blockShape[nextBlockStatus[2]][nextBlockStatus[3]][i][1]+1;
+			t.nextCubes[y*5+x].setBackground(t.COLORS[EMPTY]);
+		}
+
 		for(int i=0;i<4;i++){
 			x=blockInfo.blockShape[thisBlockStatus[2]][thisBlockStatus[3]][i][0]+thisBlockStatus[0];
 			y=blockInfo.blockShape[thisBlockStatus[2]][thisBlockStatus[3]][i][1]+thisBlockStatus[1];
@@ -256,7 +292,7 @@ class GameOperator{
 
 		
 
-		nextBlockStatus[2]=(int)(Math.random()*4);//type-random
+		nextBlockStatus[2]=(int)(Math.random()*7);//type-random
 		nextBlockStatus[3]=(int)(Math.random()*4);//posture-random
 		nextBlockStatus[4]=(int)(Math.random()*6)+1;//color-random
 
@@ -269,13 +305,20 @@ class GameOperator{
 				gameEnded=true;
 		}
 
+		for(int i=0;i<4;i++){
+			x=blockInfo.blockShape[nextBlockStatus[2]][nextBlockStatus[3]][i][0]+2;
+			y=blockInfo.blockShape[nextBlockStatus[2]][nextBlockStatus[3]][i][1]+1;
+			t.nextCubes[y*5+x].setBackground(t.COLORS[nextBlockStatus[4]]);
+		}
+
+		t.score++;
 		startAutoFallingTread();
 		gameStatusUpdate();
 	}
 
 	void gameStatusUpdate(){
 		
-		for(int i=0;i<19;i++){
+		for(int i=0;i<20;i++){
 			boolean achieveScore=true;
 			for(int j=0;j<9;j++){
 				if(sheet[j][i]<=0){
@@ -289,8 +332,7 @@ class GameOperator{
 						sheet[j][k+1]=sheet[j][k];
 					}
 				}
-				t.score+=10;
-				t.upadteGameData();
+				t.score+=20;
 			}
 		}
 
@@ -308,6 +350,7 @@ class GameOperator{
 		}
 		
 		t.printSheet(sheet);
+		t.upadteGameData();
 
 		return;
 	}
