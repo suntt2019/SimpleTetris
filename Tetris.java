@@ -18,13 +18,15 @@ interface blockInfo{
 
 class Tetris{
 	static int cubeS=0;
-	int score=-1;
+	int score=-1,lastScore=0,maxScore=0;
 	int cubeSize=40;
 	JFrame jfrm;
-	JPanel headPanel,mainPanel,gamePanel,statusPanel,textPanel;
-	JButton cubes[],nextCubes[];
+	JPanel headPanel,mainPanel,gamePanel,statusPanel,textPanel,controlPanel;
+	JButton cubes[],nextCubes[],restartButton,leftBtn,rightBtn,upBtn,downBtn;
+	JButton uselessbtn1,uselessbtn2,buttonOnScreenToggle;
 	JLabel titleLabel,scoreLabel,gameOverLabel;
 	GameOperator go;
+	boolean screenbtn=false;
 	final static Color COLORS[]={new Color(255,255,255),new Color(250,80,80),new Color(80,250,80),new Color(80,80,250),new Color(230,230,30),new Color(210,30,210),new Color(30,210,210)};
 	static final int EMPTY=0;
 
@@ -69,18 +71,19 @@ class Tetris{
 		statusPanel = new JPanel();
 		statusPanel.setLayout(new FlowLayout());
 		mainPanel.add(statusPanel);
-		statusPanel.setPreferredSize(new Dimension((int)(5.1*cubeSize),20*cubeSize));
+		statusPanel.setPreferredSize(new Dimension((int)(6.1*cubeSize),20*cubeSize));
 
 		textPanel = new JPanel();
-		textPanel.setLayout(new GridLayout(4,1));
+		textPanel.setLayout(new GridLayout(5,1));
 		statusPanel.add(textPanel);
 
 		scoreLabel = new JLabel("得分:"+score);
 		textPanel.add(scoreLabel);
 
-		textPanel.add(new JLabel("(放下一个方块+1分，填满一行+20分)"));
-		textPanel.add(new JLabel("--------------------------------------------"));
-		textPanel.add(new JLabel( "                ↓下一个方块↓                 "));
+		textPanel.add(new JLabel("(放下一个方块+1分)"));
+		textPanel.add(new JLabel("(填满一行+20分)"));
+		textPanel.add(new JLabel("--------------------------------"));
+		textPanel.add(new JLabel( "          ↓下一个方块↓           "));
 
 		JPanel nextPanel = new JPanel();
 		nextPanel.setLayout(new GridLayout(5,5));
@@ -99,6 +102,65 @@ class Tetris{
 		gameOverLabel = new JLabel("");
 		statusPanel.add(gameOverLabel);
 
+
+		restartButton = new JButton("重新开始");
+		restartButton.addActionListener((e)->go.gameRestart());
+
+		leftBtn = new JButton("←");
+		leftBtn.addActionListener((e)->{
+			jfrm.requestFocusInWindow();
+			go.goingLeft();
+		});
+		rightBtn = new JButton("→");
+		rightBtn.addActionListener((e)->{
+			jfrm.requestFocusInWindow();
+			go.goingRight();
+		});
+		upBtn = new JButton("↑");
+		upBtn.addActionListener((e)->{
+			jfrm.requestFocusInWindow();
+			go.changingPosture();
+		});
+		downBtn = new JButton("↓");
+		downBtn.addActionListener((e)->{
+			jfrm.requestFocusInWindow();
+			go.goingDown();
+		});
+
+		uselessbtn1 = new JButton("");
+		uselessbtn2 = new JButton("");
+		uselessbtn1.setEnabled(false);
+		uselessbtn2.setEnabled(false);
+		uselessbtn1.setContentAreaFilled(false);
+		uselessbtn2.setContentAreaFilled(false);
+
+		controlPanel = new JPanel();
+		controlPanel.setLayout(new GridLayout(2,3));
+		controlPanel.setPreferredSize(new Dimension(6*cubeSize,4*cubeSize));
+		controlPanel.add(uselessbtn1);
+		controlPanel.add(upBtn);
+		controlPanel.add(uselessbtn2);
+		controlPanel.add(leftBtn);
+		controlPanel.add(downBtn);
+		controlPanel.add(rightBtn);
+		statusPanel.add(controlPanel);
+		statusPanel.remove(controlPanel);
+
+		buttonOnScreenToggle = new JButton("屏幕按钮");
+		buttonOnScreenToggle.addActionListener((e)->{
+			jfrm.requestFocusInWindow();
+			if(screenbtn){
+				statusPanel.remove(controlPanel);
+			}else{
+				statusPanel.add(controlPanel);
+			}
+			screenbtn=!screenbtn;
+			jfrm.repaint();
+			jfrm.setVisible(true);
+		});
+		statusPanel.add(buttonOnScreenToggle);
+
+		jfrm.dispatchEvent(new FocusEvent(jfrm,FocusEvent.FOCUS_GAINED,true));
 
 
 		jfrm.addKeyListener(new KeyListener(){
@@ -136,6 +198,16 @@ class Tetris{
 					// 		break;
 					// }
 				}
+				if(go.gameEnded&&(e.getKeyChar()=='R'||e.getKeyChar()=='r')){
+					go.gameRestart();
+					try{
+						Thread.sleep(500);
+					}
+					catch(InterruptedException exc){
+						System.out.println("InterruptedException");
+					}
+				}
+
 			}
 			public void keyPressed(KeyEvent e){
 				// System.out.println(e);
@@ -144,7 +216,6 @@ class Tetris{
 				// System.out.println(e);	
 			}
 		});
-
 
 		jfrm.setVisible(true);
 	}
@@ -171,7 +242,11 @@ class Tetris{
 
 	public void upadteGameData(){
 		scoreLabel.setText("得分:"+score);
-		if(go.gameEnded)gameOverLabel.setText("游戏结束");
+		if(go.gameEnded){
+			gameOverLabel.setText("游戏结束");
+		}else{
+			gameOverLabel.setText("上次:"+lastScore+",最高:"+maxScore);
+		}
 		return;
 	}
 
@@ -192,6 +267,7 @@ class Tetris{
 		go = new GameOperator();
 		go.init(this);
 		printSheet(go.getSheet());
+		jfrm.requestFocusInWindow();
 	}
 }
 
@@ -223,18 +299,69 @@ class GameOperator{
 	void init(Tetris tt){
 		t=tt;
 
-		for(int[] sheetLine : sheet)
-			for(int sheetContent : sheetLine)
-				sheetContent=EMPTY;
-		
+		for(int i=0;i<9;i++)
+			for(int j=0;j<20;j++)
+				sheet[i][j]=EMPTY;
+		thisBlockColor=EMPTY;
 		thisBlockStatus[0]=4;
 		thisBlockStatus[4]=-1;
 		nextBlockStatus[2]=(int)(Math.random()*7);//type-random
 		nextBlockStatus[3]=(int)(Math.random()*4);//posture-random
 		nextBlockStatus[4]=(int)(Math.random()*6)+1;//color-random
 		generateNewBlock();
+	}
 
-		startAutoFallingTread();
+
+	void gameEnd(){
+		if(gameEnded)
+			return;
+		gameEnded=true;
+		t.upadteGameData();
+		t.statusPanel.remove(t.buttonOnScreenToggle);
+		t.statusPanel.add(t.restartButton);
+		t.statusPanel.add(t.buttonOnScreenToggle);
+		return;
+	}
+
+	void gameRestart(){
+		t.statusPanel.remove(t.restartButton);
+		t.jfrm.requestFocusInWindow();
+		new Thread(new Runnable(){
+			public void run(){
+				int x,y;
+				t.lastScore=t.score;
+				if(t.score>t.maxScore)
+					t.maxScore=t.score;
+				try{
+					Thread.sleep(500);
+				}
+				catch(InterruptedException exc){
+					System.out.println("InterruptedException");
+				}
+				//System.out.println("gameRestart");
+				for(int i=0;i<4;i++){
+					x=blockInfo.blockShape[nextBlockStatus[2]][nextBlockStatus[3]][i][0]+2;
+					y=blockInfo.blockShape[nextBlockStatus[2]][nextBlockStatus[3]][i][1]+1;
+					t.nextCubes[y*5+x].setBackground(t.COLORS[EMPTY]);
+				}
+				init(t);
+				t.score=0;
+				gameEnded=false;
+				t.upadteGameData();
+				// while(true){
+				// 	try{
+				// 	Thread.sleep(200);
+				// 	}
+				// 	catch(InterruptedException exc){
+				// 		System.out.println("InterruptedException");
+				// 	}
+				// 	for(int i=0;i<9;i++)
+				// 		for(int j=0;j<20;j++)
+				// 			System.out.print(sheet[i][j]+" ");
+				// }
+			}
+		}).start();
+		return;
 	}
 
 	void startAutoFallingTread(){
@@ -324,8 +451,9 @@ class GameOperator{
 		for(int i=0;i<4;i++){
 			x=blockInfo.blockShape[thisBlockStatus[2]][thisBlockStatus[3]][i][0]+thisBlockStatus[0];
 			y=blockInfo.blockShape[thisBlockStatus[2]][thisBlockStatus[3]][i][1]+thisBlockStatus[1];
-			if(sheet[x][y]>0)
-				gameEnded=true;
+			if(sheet[x][y]>0){
+				gameEnd();
+			}
 		}
 
 		for(int i=0;i<4;i++){
@@ -368,8 +496,9 @@ class GameOperator{
 		}
 
 		for(int i=0;i<9;i++){
-			if(sheet[i][0]>0)
-				gameEnded=true;
+			if(sheet[i][0]>0){
+				gameEnd();
+			}
 		}
 		
 		t.printSheet(sheet);
