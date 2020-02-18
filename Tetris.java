@@ -109,22 +109,26 @@ class Tetris{
 		leftBtn = new JButton("←");
 		leftBtn.addActionListener((e)->{
 			jfrm.requestFocusInWindow();
-			go.goingLeft();
+			if(!go.gameEnded)
+				go.goingLeft();
 		});
 		rightBtn = new JButton("→");
 		rightBtn.addActionListener((e)->{
 			jfrm.requestFocusInWindow();
-			go.goingRight();
+			if(!go.gameEnded)
+				go.goingRight();
 		});
 		upBtn = new JButton("↑");
 		upBtn.addActionListener((e)->{
 			jfrm.requestFocusInWindow();
-			go.changingPosture();
+			if(!go.gameEnded)
+				go.changingPosture();
 		});
 		downBtn = new JButton("↓");
 		downBtn.addActionListener((e)->{
 			jfrm.requestFocusInWindow();
-			go.goingDown();
+			if(!go.gameEnded)
+				go.goingDown();
 		});
 
 		uselessbtn1 = new JButton("");
