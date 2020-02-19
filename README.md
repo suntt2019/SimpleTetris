@@ -5,6 +5,7 @@
 <br>
 
 ### 玩法说明
+  * 运行需要先安装[`JRE8及以上`](https://www.java.com/)（当然有`JDK8及以上`也可以）
   * 玩法就是经典的 [俄罗斯方块](https://wiki.hk.wjbk.site/wiki/%E4%BF%84%E7%BD%97%E6%96%AF%E6%96%B9%E5%9D%97)
   * 计分方式
     * 每放下一个方块 `+1` 分
